@@ -1,0 +1,329 @@
+name: FCS Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'Dockerfile'
+      - '**.tf'
+      - '**.yaml'
+      - '**.yml'
+      - '.github/workflows/fcs-scan.yml'
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of scan to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - image
+          - iac
+
+env:
+  FCS_VERSION: '2.2.0'
+  FALCON_CLOUD: 'us-1'
+
+jobs:
+  setup:
+    name: Setup FCS CLI
+    runs-on: ubuntu-latest
+    outputs:
+      fcs-version: ${{ steps.download.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache FCS CLI
+        id: cache-fcs
+        uses: actions/cache@v3
+        with:
+          path: ~/bin/fcs
+          key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
+
+      - name: Download FCS CLI
+        id: download
+        if: steps.cache-fcs.outputs.cache-hit != 'true'
+        run: |
+          echo "Downloading FCS CLI version ${{ env.FCS_VERSION }}"
+          curl -L -o fcs.tar.gz https://path-to-download/fcs_${{ env.FCS_VERSION }}_Linux_x86_64.tar.gz
+          tar -xzf fcs.tar.gz
+          chmod +x fcs
+          mkdir -p ~/bin
+          mv fcs ~/bin/
+          echo "version=${{ env.FCS_VERSION }}" >> $GITHUB_OUTPUT
+
+      - name: Verify installation
+        run: |
+          export PATH=$PATH:~/bin
+          fcs --version
+
+  image-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    needs: setup
+    if: |
+      github.event.inputs.scan_type == 'all' ||
+      github.event.inputs.scan_type == 'image' ||
+      github.event.inputs.scan_type == ''
+
+    strategy:
+      matrix:
+        image:
+          - nginx:latest
+          - alpine:3.14
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore FCS CLI cache
+        uses: actions/cache@v3
+        with:
+          path: ~/bin/fcs
+          key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
+
+      - name: Configure FCS CLI
+        env:
+          FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+        run: |
+          export PATH=$PATH:~/bin
+          fcs configure \
+            --client-id "${FALCON_CLIENT_ID}" \
+            --client-secret "${FALCON_CLIENT_SECRET}" \
+            --falcon-cloud "${{ env.FALCON_CLOUD }}"
+
+      - name: Build Docker image
+        if: contains(github.event.head_commit.message, '[build]')
+        run: |
+          docker build -t ${{ github.repository }}:${{ github.sha }} .
+
+      - name: Scan image
+        id: scan
+        run: |
+          export PATH=$PATH:~/bin
+
+          IMAGE="${{ matrix.image }}"
+          if [[ "${{ github.event.head_commit.message }}" == *"[build]"* ]]; then
+            IMAGE="${{ github.repository }}:${{ github.sha }}"
+          fi
+
+          echo "Scanning image: $IMAGE"
+          fcs scan image "$IMAGE" --output json > scan-results-${{ strategy.job-index }}.json
+
+          # Extract metrics
+          TOTAL=$(jq '.vulnerabilities | length' scan-results-${{ strategy.job-index }}.json)
+          CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' scan-results-${{ strategy.job-index }}.json)
+          HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' scan-results-${{ strategy.job-index }}.json)
+
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+
+          echo "### Image Scan Results for $IMAGE" >> $GITHUB_STEP_SUMMARY
+          echo "- Total Vulnerabilities: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical: $CRITICAL" >> $GITHUB_STEP_SUMMARY
+          echo "- High: $HIGH" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-scan-results-${{ strategy.job-index }}
+          path: scan-results-${{ strategy.job-index }}.json
+          retention-days: 30
+
+      - name: Check vulnerability threshold
+        if: steps.scan.outputs.critical > 0
+        run: |
+          echo "::error::Found ${{ steps.scan.outputs.critical }} critical vulnerabilities"
+          exit 1
+
+  iac-scan:
+    name: Infrastructure as Code Scan
+    runs-on: ubuntu-latest
+    needs: setup
+    if: |
+      github.event.inputs.scan_type == 'all' ||
+      github.event.inputs.scan_type == 'iac' ||
+      github.event.inputs.scan_type == ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore FCS CLI cache
+        uses: actions/cache@v3
+        with:
+          path: ~/bin/fcs
+          key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
+
+      - name: Configure FCS CLI
+        env:
+          FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+        run: |
+          export PATH=$PATH:~/bin
+          fcs configure \
+            --client-id "${FALCON_CLIENT_ID}" \
+            --client-secret "${FALCON_CLIENT_SECRET}" \
+            --falcon-cloud "${{ env.FALCON_CLOUD }}"
+
+      - name: Scan IaC files
+        id: iac-scan
+        run: |
+          export PATH=$PATH:~/bin
+
+          # Scan all IaC directories
+          if [ -d "terraform" ]; then
+            echo "Scanning Terraform files..."
+            fcs scan iac ./terraform/ --output sarif > iac-terraform.sarif
+          fi
+
+          if [ -d "k8s" ] || [ -d "kubernetes" ]; then
+            echo "Scanning Kubernetes manifests..."
+            fcs scan iac ./k8s/ --output sarif > iac-k8s.sarif 2>/dev/null || true
+            fcs scan iac ./kubernetes/ --output sarif > iac-kubernetes.sarif 2>/dev/null || true
+          fi
+
+          if [ -d "cloudformation" ]; then
+            echo "Scanning CloudFormation templates..."
+            fcs scan iac ./cloudformation/ --output sarif > iac-cloudformation.sarif
+          fi
+
+          # Scan current directory for any IaC files
+          fcs scan iac . --output json > iac-results.json
+
+          # Extract metrics
+          TOTAL=$(jq '.issues | length' iac-results.json)
+          CRITICAL=$(jq '[.issues[] | select(.severity=="CRITICAL")] | length' iac-results.json)
+          HIGH=$(jq '[.issues[] | select(.severity=="HIGH")] | length' iac-results.json)
+
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+
+          echo "### IaC Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Total Issues: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- Critical: $CRITICAL" >> $GITHUB_STEP_SUMMARY
+          echo "- High: $HIGH" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload SARIF results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: .
+          category: iac-security
+
+      - name: Upload IaC scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: iac-scan-results
+          path: iac-*.sarif
+          retention-days: 30
+
+      - name: Check IaC policy
+        if: steps.iac-scan.outputs.critical > 0
+        run: |
+          echo "::warning::Found ${{ steps.iac-scan.outputs.critical }} critical IaC issues"
+          # Uncomment to fail on critical issues
+          # exit 1
+
+  report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [image-scan, iac-scan]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: scan-results/
+
+      - name: Generate summary report
+        run: |
+          echo "# Security Scan Summary" > report.md
+          echo "" >> report.md
+          echo "**Scan Date:** $(date)" >> report.md
+          echo "**Commit:** ${{ github.sha }}" >> report.md
+          echo "**Branch:** ${{ github.ref_name }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Image Scans" >> report.md
+          for file in scan-results/image-scan-results-*/scan-results-*.json; do
+            if [ -f "$file" ]; then
+              IMAGE=$(jq -r '.image // "unknown"' "$file")
+              TOTAL=$(jq '.vulnerabilities | length' "$file")
+              CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' "$file")
+              HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' "$file")
+
+              echo "### $IMAGE" >> report.md
+              echo "- Total: $TOTAL" >> report.md
+              echo "- Critical: $CRITICAL" >> report.md
+              echo "- High: $HIGH" >> report.md
+              echo "" >> report.md
+            fi
+          done
+
+          echo "## IaC Scans" >> report.md
+          if [ -f "scan-results/iac-scan-results/iac-results.json" ]; then
+            TOTAL=$(jq '.issues | length' scan-results/iac-scan-results/iac-results.json)
+            CRITICAL=$(jq '[.issues[] | select(.severity=="CRITICAL")] | length' scan-results/iac-scan-results/iac-results.json)
+            HIGH=$(jq '[.issues[] | select(.severity=="HIGH")] | length' scan-results/iac-scan-results/iac-results.json)
+
+            echo "- Total Issues: $TOTAL" >> report.md
+            echo "- Critical: $CRITICAL" >> report.md
+            echo "- High: $HIGH" >> report.md
+          fi
+
+          cat report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: report.md
+          retention-days: 90
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [image-scan, iac-scan]
+    if: failure() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"❌ Security scan failed for ${{ github.repository }} on branch ${{ github.ref_name }}\\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>\"}" \
+            $SLACK_WEBHOOK_URL

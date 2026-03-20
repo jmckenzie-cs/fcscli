@@ -1,0 +1,27 @@
+# Sample image list for batch scanning
+# One image per line
+# Lines starting with # are comments
+
+# Official images
+nginx:latest
+nginx:1.21.0
+alpine:3.14
+alpine:latest
+redis:6.2
+redis:7.0
+
+# Python images
+python:3.9
+python:3.10-slim
+
+# Node.js images
+node:16
+node:18-alpine
+
+# Database images
+postgres:14
+mysql:8.0
+
+# Add your custom images here
+# myregistry.io/myapp:v1.0.0
+# 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:latest

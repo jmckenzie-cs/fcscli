@@ -1,0 +1,85 @@
+# FCS CLI specific
+fcs
+fcs.exe
+*.tar.gz
+*.zip
+
+# Configuration files (contains sensitive data)
+fcs_profiles.json
+fcs_profiles.json.backup
+.crowdstrike/
+
+# Scan results
+scan-results/
+*.sarif
+*-results.json
+iac-results/
+reports/
+iac-reports/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE specific
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Credentials and secrets
+.env
+.env.local
+secrets.yml
+credentials.json
+
+# Build artifacts
+build/
+dist/
+target/
+
+# Node modules (if using Node.js for any tooling)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python (if using Python for any tooling)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+
+# Docker
+.dockerignore
+
+# Test results
+test-results/
+coverage/
+
+# Downloaded binaries
+downloads/
