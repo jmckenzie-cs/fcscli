@@ -29,7 +29,6 @@ on:
 env:
   FCS_VERSION: '2.2.0'
   FALCON_CLOUD: 'us-1'
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   setup:
@@ -52,13 +51,37 @@ jobs:
       - name: Download FCS CLI
         id: download
         if: steps.cache-fcs.outputs.cache-hit != 'true'
+        env:
+          FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+          FALCON_API_URL: ${{ secrets.FALCON_API_URL }}
         run: |
           echo "Downloading FCS CLI version ${{ env.FCS_VERSION }}"
-          curl -L -o fcs.tar.gz https://path-to-download/fcs_${{ env.FCS_VERSION }}_Linux_x86_64.tar.gz
-          tar -xzf fcs.tar.gz
+
+          # Use programmatic download script
+          chmod +x ./scripts/download-fcs-cli.sh
+          export OUTPUT_DIR="."
+          export FCS_TARGET_OS="linux"
+          export FCS_TARGET_ARCH="amd64"
+
+          # Set API URL based on region if not provided
+          if [ -z "$FALCON_API_URL" ]; then
+            case "${{ env.FALCON_CLOUD }}" in
+              us-1) export FALCON_API_URL="https://api.crowdstrike.com" ;;
+              us-2) export FALCON_API_URL="https://api.us-2.crowdstrike.com" ;;
+              eu-1) export FALCON_API_URL="https://api.eu-1.crowdstrike.com" ;;
+              us-gov-1) export FALCON_API_URL="https://api.laggar.gcw.crowdstrike.com" ;;
+              us-gov-2) export FALCON_API_URL="https://api.us-gov-2.crowdstrike.com" ;;
+            esac
+          fi
+
+          # Download and extract
+          DOWNLOADED_FILE=$(./scripts/download-fcs-cli.sh)
+          tar -xzf "$DOWNLOADED_FILE"
           chmod +x fcs
           mkdir -p ~/bin
           mv fcs ~/bin/
+
           echo "version=${{ env.FCS_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Verify installation
