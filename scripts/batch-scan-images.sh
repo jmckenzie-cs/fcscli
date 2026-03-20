@@ -127,7 +127,7 @@ Successful: $success
 Failed: $failed
 Success Rate: $(awk "BEGIN {printf \"%.2f%%\", ($success/$total)*100}")
 Total Duration: ${total_duration}s
-Average Duration: $(awk "BEGIN {printf \"%.2f\", $total_duration/$success}")s
+Average Duration: $(if [[ $success -gt 0 ]]; then awk "BEGIN {printf \"%.2f\", $total_duration/$success}"; else echo "N/A"; fi)s
 ========================================
 
 Detailed Results:
@@ -258,12 +258,12 @@ main() {
     echo
     generate_summary "$results_file"
 
-    # Cleanup temp file
-    rm -f "$results_file"
-
-    # Check if any scans failed
+    # Check if any scans failed (before removing results file)
     local failed_count
     failed_count=$(grep -c "^failed|" "$results_file" 2>/dev/null || echo 0)
+
+    # Cleanup temp file
+    rm -f "$results_file"
 
     if [[ $failed_count -gt 0 ]]; then
         log_warn "$failed_count scan(s) failed"
