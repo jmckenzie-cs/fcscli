@@ -43,7 +43,7 @@ jobs:
 
       - name: Cache FCS CLI
         id: cache-fcs
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/bin/fcs
           key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Restore FCS CLI cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/bin/fcs
           key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
@@ -135,7 +135,7 @@ jobs:
           echo "- High: $HIGH" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image-scan-results-${{ strategy.job-index }}
           path: scan-results-${{ strategy.job-index }}.json
@@ -161,7 +161,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Restore FCS CLI cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/bin/fcs
           key: fcs-cli-${{ env.FCS_VERSION }}-${{ runner.os }}
@@ -217,7 +217,7 @@ jobs:
           echo "- High: $HIGH" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload SARIF results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: .
@@ -248,7 +248,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: scan-results/
 
