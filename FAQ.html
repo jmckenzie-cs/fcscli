@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FCS CLI — Frequently Asked Questions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080c14;
+      --bg-panel:  #0d1320;
+      --bg-card:   #111827;
+      --bg-code:   #0a0f1a;
+      --border:    #1e2d45;
+      --border-hi: #2a3f60;
+      --red:       #e5141b;
+      --red-dim:   #a00e13;
+      --red-glow:  rgba(229,20,27,0.15);
+      --text:      #d4dbe8;
+      --text-dim:  #6b7d97;
+      --text-hi:   #f0f4fa;
+      --accent:    #4db8ff;
+      --accent-dim:#1a5a80;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Barlow', sans-serif;
+      --cond:      'Barlow Condensed', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── Background texture ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(229,20,27,0.06) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      grid-column: 1 / -1;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      background: var(--red);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark::after {
+      content: '▶';
+      color: #fff;
+      font-size: 12px;
+      margin-left: 2px;
+    }
+
+    .header-title {
+      font-family: var(--cond);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-hi);
+    }
+
+    .header-title span {
+      color: var(--red);
+    }
+
+    .header-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      background: var(--red-glow);
+      border: 1px solid var(--red-dim);
+      color: var(--red);
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    #search {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-hi);
+      font-family: var(--sans);
+      font-size: 14px;
+      padding: 8px 14px 8px 36px;
+      width: 280px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    #search::placeholder { color: var(--text-dim); }
+
+    #search:focus {
+      border-color: var(--red-dim);
+      box-shadow: 0 0 0 3px var(--red-glow);
+    }
+
+    /* ── Sidebar ── */
+    nav {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+
+    nav::-webkit-scrollbar { width: 4px; }
+    nav::-webkit-scrollbar-track { background: transparent; }
+    nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .nav-section-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0 24px 8px;
+      margin-top: 24px;
+    }
+
+    .nav-section-label:first-child { margin-top: 0; }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 24px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: color 0.15s, background 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    nav a:hover {
+      color: var(--text-hi);
+      background: rgba(255,255,255,0.03);
+    }
+
+    nav a.active {
+      color: var(--red);
+      border-left-color: var(--red);
+      background: var(--red-glow);
+    }
+
+    nav a .count {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1px 6px;
+    }
+
+    /* ── Main content ── */
+    main {
+      padding: 48px 52px;
+      max-width: 900px;
+    }
+
+    .main-hero {
+      margin-bottom: 52px;
+    }
+
+    .main-hero h1 {
+      font-family: var(--cond);
+      font-size: 46px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text-hi);
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+
+    .main-hero h1 em {
+      font-style: normal;
+      color: var(--red);
+    }
+
+    .main-hero p {
+      color: var(--text-dim);
+      font-size: 15px;
+      max-width: 560px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 32px;
+      margin-top: 28px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text-hi);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── FAQ Sections ── */
+    .faq-section {
+      margin-bottom: 56px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--red-glow);
+      border: 1px solid var(--red-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-family: var(--cond);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-hi);
+    }
+
+    /* ── Accordion items ── */
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: var(--bg-card);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item:hover { border-color: var(--border-hi); }
+
+    .faq-item.open {
+      border-color: var(--border-hi);
+      box-shadow: 0 0 0 1px rgba(229,20,27,0.08), 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+
+    .faq-question::-webkit-details-marker { display: none; }
+
+    .q-text {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-hi);
+      line-height: 1.4;
+    }
+
+    .q-chevron {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: var(--text-dim);
+      transition: transform 0.25s, color 0.2s;
+    }
+
+    .faq-item.open .q-chevron {
+      transform: rotate(180deg);
+      color: var(--red);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 20px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .faq-item.open .faq-answer { display: block; }
+
+    .faq-answer p {
+      color: var(--text);
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .faq-answer p + p { margin-top: 10px; }
+
+    .faq-answer ul, .faq-answer ol {
+      margin-top: 12px;
+      padding-left: 20px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .faq-answer li { margin-bottom: 4px; }
+
+    .faq-answer strong { color: var(--text-hi); font-weight: 600; }
+
+    .faq-answer a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid var(--accent-dim);
+    }
+
+    .faq-answer a:hover { color: #7dcfff; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    pre::before {
+      content: '$ ';
+      color: var(--red);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    pre.no-prompt::before { content: none; }
+
+    pre.no-prompt {
+      border-left: 2px solid var(--border-hi);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: #a8d8a8;
+      line-height: 1.7;
+    }
+
+    .faq-answer p code, .faq-answer li code {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 12px;
+      color: #a8d8a8;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--bg-code);
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+
+    td code {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: #a8d8a8;
+    }
+
+    /* ── Note/warning callouts ── */
+    .note {
+      background: rgba(77,184,255,0.06);
+      border: 1px solid rgba(77,184,255,0.2);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .warn {
+      background: rgba(255,180,0,0.06);
+      border: 1px solid rgba(255,180,0,0.2);
+      border-left: 3px solid #ffb400;
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .console {
+      background: rgba(229,20,27,0.07);
+      border: 1px solid rgba(229,20,27,0.3);
+      border-left: 3px solid var(--red);
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .console::before {
+      content: '🔒';
+      flex-shrink: 0;
+      font-size: 13px;
+      margin-top: 1px;
+    }
+
+    .warn strong, .note strong, .console strong { color: var(--text-hi); }
+
+    /* ── No results ── */
+    #no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+    }
+
+    #no-results svg { margin-bottom: 16px; color: var(--text-dim); opacity: 0.4; }
+    #no-results h3 { font-family: var(--cond); font-size: 22px; color: var(--text-dim); margin-bottom: 6px; }
+
+    /* ── Footer ── */
+    footer {
+      grid-column: 1 / -1;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    footer span { font-family: var(--mono); }
+
+    /* ── Scrollbar for main ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { display: none; }
+      main { padding: 32px 24px; }
+      .main-hero h1 { font-size: 34px; }
+      header { padding: 0 20px; }
+      #search { width: 200px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="logo-mark"></div>
+      <span class="header-title">FCS <em>CLI</em></span>
+      <span class="header-badge">FAQ</span>
+    </div>
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="text" placeholder="Search questions…" autocomplete="off" />
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="nav-section-label">Topics</div>
+    <a href="#general">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      General
+      <span class="count">5</span>
+    </a>
+    <a href="#installation">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+      Installation
+      <span class="count">5</span>
+    </a>
+    <a href="#auth">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Auth &amp; Config
+      <span class="count">8</span>
+    </a>
+    <a href="#image-scan">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Image Scanning
+      <span class="count">6</span>
+    </a>
+    <a href="#iac-scan">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      IaC Scanning
+      <span class="count">5</span>
+    </a>
+    <a href="#output">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Output &amp; Reporting
+      <span class="count">5</span>
+    </a>
+    <a href="#cicd">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      CI/CD Integration
+      <span class="count">6</span>
+    </a>
+    <a href="#advanced">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Advanced Features
+      <span class="count">6</span>
+    </a>
+    <a href="#troubleshooting">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Troubleshooting
+      <span class="count">6</span>
+    </a>
+  </nav>
+
+  <!-- Main -->
+  <main id="main-content">
+    <div class="main-hero">
+      <h1>FCS CLI<br /><em>FAQ</em></h1>
+      <p>Answers to the most common questions about installing, configuring, and using the CrowdStrike Falcon Cloud Security CLI for container image and Infrastructure as Code scanning. Written for users who may not have access to the repository scripts — all examples use standard CLI commands and tools.</p>
+      <div class="stats-row">
+        <div class="stat"><span class="stat-num">47</span><span class="stat-label">Questions</span></div>
+        <div class="stat"><span class="stat-num">9</span><span class="stat-label">Topics</span></div>
+        <div class="stat"><span class="stat-num">5</span><span class="stat-label">Regions</span></div>
+      </div>
+    </div>
+
+    <div id="no-results">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <h3>No results found</h3>
+      <p>Try a different search term.</p>
+    </div>
+
+    <!-- ── General ── -->
+    <section class="faq-section" id="general">
+      <div class="section-header">
+        <div class="section-icon">?</div>
+        <h2>General</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What is the FCS CLI?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The <strong>CrowdStrike Falcon Cloud Security (FCS) CLI</strong> is a command-line tool that lets you scan container images and Infrastructure as Code (IaC) configurations for vulnerabilities and misconfigurations using the CrowdStrike Falcon platform.</p>
+          <p>It integrates directly with the Falcon API, so scan results feed into the same Falcon console where the rest of your security posture lives — enabling a unified view across cloud workloads, containers, and IaC templates.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What can the FCS CLI do?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The FCS CLI supports two primary scan types:</p>
+          <ul>
+            <li><strong>Container image scanning</strong> — Scans Docker images for known CVEs, vulnerable packages, and OS-level vulnerabilities. Works with public images and private registries (ECR, GCR, ACR, Docker Hub, etc.).</li>
+            <li><strong>Infrastructure as Code (IaC) scanning</strong> — Detects security misconfigurations in Terraform, Kubernetes manifests, CloudFormation templates, and other IaC formats.</li>
+          </ul>
+          <p>Beyond scanning, it supports multiple output formats (JSON, SARIF, human-readable), profile-based configuration, batch operations, and self-updating.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What CrowdStrike subscription or license is required?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>You need an active CrowdStrike Falcon subscription that includes Falcon Cloud Security.</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — The FCS CLI binary is downloaded from the Falcon console. Navigate to <strong>Cloud Security → Image Assessment → CI/CD Integrations</strong>. You must be logged in with an account that has access to Falcon Cloud Security.</div></div>
+          <p>You also need a CrowdStrike API client with the appropriate scopes for the features you plan to use. See the <em>Authentication &amp; Configuration</em> section for the required scopes.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What platforms and architectures are supported?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <table>
+            <tr><th>Platform</th><th>Architectures</th></tr>
+            <tr><td>Linux</td><td><code>amd64</code>, <code>arm64</code></td></tr>
+            <tr><td>macOS</td><td><code>amd64</code>, <code>arm64</code> (Apple Silicon)</td></tr>
+            <tr><td>Windows</td><td><code>amd64</code>, <code>arm64</code></td></tr>
+          </table>
+          <p>The install script (<code>scripts/install-fcs-cli.sh</code>) auto-detects your platform and architecture, so you typically don't need to specify these manually.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Is the FCS CLI open source?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>No. The FCS CLI binary itself is <strong>proprietary CrowdStrike software</strong> and is not open source. However, this example repository — including all scripts, workflow templates, and documentation — is released under the MIT license and is freely usable and modifiable.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Installation ── -->
+    <section class="faq-section" id="installation">
+      <div class="section-header">
+        <div class="section-icon">↓</div>
+        <h2>Installation</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What are the different ways to install the FCS CLI?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>There are four installation methods:</p>
+          <ol>
+            <li><strong>Manual download from Falcon console</strong> — Download the binary directly from the Falcon console and place it on your <code>PATH</code>. Requires Falcon console access — see <em>How do I manually download the FCS CLI from the Falcon console?</em> below.</li>
+            <li><strong>Assisted install script</strong> — An install script (<code>install-fcs-cli.sh</code>) is provided in this repository that auto-detects your platform and architecture and handles binary placement. You must first obtain the binary via the manual download method.</li>
+            <li><strong>Programmatic API download</strong> — Authenticate with the Falcon API to download the binary without console access. Best for CI/CD pipelines. Requires valid API credentials with the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
+            <li><strong>Self-update</strong> — If the CLI is already installed, run <code>fcs update</code> to update to the latest version in-place. Also requires the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I manually download the FCS CLI from the Falcon console?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <div class="console"><div><strong>Falcon Console Required</strong> — Navigate to <strong>Cloud Security → Image Assessment → CI/CD Integrations</strong> to access the binary download.</div></div>
+          <p>Once downloaded, move the binary to a directory on your <code>PATH</code> and make it executable:</p>
+          <pre><code># macOS / Linux
+chmod +x fcs
+sudo mv fcs /usr/local/bin/
+
+# Verify
+fcs --help</code></pre>
+          <p>Choose the correct binary for your platform and architecture from the download page:</p>
+          <table>
+            <tr><th>Platform</th><th>Architecture</th></tr>
+            <tr><td>Linux</td><td><code>amd64</code> or <code>arm64</code></td></tr>
+            <tr><td>macOS</td><td><code>amd64</code> (Intel) or <code>arm64</code> (Apple Silicon)</td></tr>
+            <tr><td>Windows</td><td><code>amd64</code> or <code>arm64</code></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I download the CLI programmatically via the API?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use the Falcon OAuth2 token endpoint to get a bearer token, then call the sensor download API to retrieve the binary. This approach works without console access and is ideal for CI/CD pipelines.</p>
+          <pre><code># Step 1: Get an OAuth2 token
+TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
+  -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
+  | jq -r '.access_token')
+
+# Step 2: List available FCS CLI versions
+curl -s -H "Authorization: Bearer ${TOKEN}" \
+  "https://api.crowdstrike.com/sensor-installers/entities/versions/v1?type=fcs" \
+  | jq '.resources[].version'
+
+# Step 3: Download the binary for your platform
+curl -sL -H "Authorization: Bearer ${TOKEN}" \
+  "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
+  -o fcs && chmod +x fcs</code></pre>
+          <p>Replace <code>os</code> and <code>arch</code> with values matching your target platform (<code>linux</code>/<code>darwin</code>/<code>windows</code>, <code>amd64</code>/<code>arm64</code>).</p>
+          <div class="note"><strong>Requirements:</strong> <code>curl</code> and <code>jq</code> must be installed. The API client needs the <strong>Cloud Security Tools Download: Read</strong> scope.</div>
+          <div class="note"><strong>Non-US-1 regions:</strong> Replace <code>api.crowdstrike.com</code> with your regional API endpoint (e.g., <code>api.us-2.crowdstrike.com</code>).</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I verify my installation?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Run either of these commands after installation:</p>
+          <pre><code>fcs --help
+fcs --version</code></pre>
+          <p>If the command is not found, ensure the install directory is on your <code>PATH</code>. For example, if you installed to <code>/usr/local/bin</code>:</p>
+          <pre class="no-prompt"><code>export PATH="/usr/local/bin:$PATH"
+# Add the above line to your ~/.zshrc or ~/.bashrc to make it permanent</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I update the FCS CLI to the latest version?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>If the CLI is already installed and configured, run the built-in update command:</p>
+          <pre><code>fcs update</code></pre>
+          <p>This downloads and replaces the binary in-place. The API client used must have the <strong>Cloud Security Tools Download: Read</strong> scope enabled.</p>
+          <p>In CI/CD pipelines, prefer pinning a specific version using the download script rather than relying on <code>fcs update</code>, to ensure reproducible builds.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Auth & Config ── -->
+    <section class="faq-section" id="auth">
+      <div class="section-header">
+        <div class="section-icon">🔑</div>
+        <h2>Authentication &amp; Configuration</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What API credentials do I need?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>You need a CrowdStrike API client with a <strong>Client ID</strong> and <strong>Client Secret</strong>.</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — Create API clients in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys → Add new API client</strong>. You must have the appropriate role permissions to create API clients.</div></div>
+          <p>Assign only the scopes your use case requires:</p>
+          <table>
+            <tr><th>Feature</th><th>Required API Scopes</th></tr>
+            <tr><td>Container Image Scanning</td><td>Falcon Container CLI: Read/Write<br />Falcon Container Image: Read/Write</td></tr>
+            <tr><td>IaC Scanning</td><td>Infrastructure as Code: Read/Write</td></tr>
+            <tr><td>CLI Updates (<code>fcs update</code>)</td><td>Cloud Security Tools Download: Read</td></tr>
+          </table>
+          <div class="note"><strong>Best practice:</strong> Create separate API clients for each environment (dev, staging, prod) and grant only the minimum scopes needed.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I configure the CLI for the first time?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <div class="console"><div><strong>Falcon Console Required</strong> — Before configuring the CLI, you need your API Client ID and Secret. Obtain these from <strong>Support &amp; Resources → API Clients &amp; Keys</strong> in the Falcon console.</div></div>
+          <p>Run the interactive setup wizard:</p>
+          <pre><code>fcs configure</code></pre>
+          <p>Or configure non-interactively (useful for scripts and CI/CD):</p>
+          <pre><code>fcs configure \
+  --client-id YOUR_CLIENT_ID \
+  --client-secret YOUR_CLIENT_SECRET \
+  --falcon-cloud us-1</code></pre>
+          <p>This creates a configuration file at <code>~/.crowdstrike/fcs.json</code>.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Where is the configuration file stored?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The configuration file is stored at:</p>
+          <pre class="no-prompt"><code>~/.crowdstrike/fcs.json</code></pre>
+          <p>This location is XDG-compliant and contains your credentials and profiles in JSON format. Ensure this file has restrictive permissions (<code>600</code>) so other users on the system cannot read your credentials.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How does credential precedence work?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>When the CLI looks for credentials, it checks in this order (highest priority first):</p>
+          <ol>
+            <li><strong>CLI flags</strong> — <code>--client-id</code> and <code>--client-secret</code> passed directly</li>
+            <li><strong>Environment variables</strong> — <code>FALCON_CLIENT_ID</code>, <code>FALCON_CLIENT_SECRET</code>, <code>FALCON_CLOUD</code></li>
+            <li><strong>Named profile</strong> — The profile specified with <code>--profile &lt;name&gt;</code></li>
+            <li><strong>Default profile</strong> — The profile marked as default in <code>~/.crowdstrike/fcs.json</code></li>
+          </ol>
+          <p>This means environment variables always override the config file, which is the recommended pattern for CI/CD systems.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I set up multiple profiles for different environments?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Create named profiles for each environment during configuration:</p>
+          <pre><code># Create a production profile
+fcs configure --profile production \
+  --client-id PROD_CLIENT_ID \
+  --client-secret PROD_CLIENT_SECRET \
+  --falcon-cloud us-1
+
+# Create a staging profile
+fcs configure --profile staging \
+  --client-id STAGING_CLIENT_ID \
+  --client-secret STAGING_CLIENT_SECRET \
+  --falcon-cloud us-1</code></pre>
+          <p>Then select the profile at scan time:</p>
+          <pre><code>fcs --profile production scan image nginx:latest
+fcs --profile staging scan image myapp:dev</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What environment variables does the CLI support?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <table>
+            <tr><th>Variable</th><th>Description</th></tr>
+            <tr><td><code>FALCON_CLIENT_ID</code></td><td>API client ID</td></tr>
+            <tr><td><code>FALCON_CLIENT_SECRET</code></td><td>API client secret</td></tr>
+            <tr><td><code>FALCON_CLOUD</code></td><td>Cloud region (<code>us-1</code>, <code>us-2</code>, <code>eu-1</code>, etc.)</td></tr>
+            <tr><td><code>FALCON_API_URL</code></td><td>Custom API endpoint URL (overrides region)</td></tr>
+            <tr><td><code>FCS_DEBUG</code></td><td>Enable debug logging when set to <code>true</code></td></tr>
+            <tr><td><code>FCS_SOCKET</code></td><td>Path to Docker socket (default: <code>/var/run/docker.sock</code>)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Which CrowdStrike region should I use?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Match the region to your Falcon console URL:</p>
+          <table>
+            <tr><th>Region</th><th>Console URL</th><th>API URL</th></tr>
+            <tr><td><code>us-1</code></td><td>falcon.crowdstrike.com</td><td>api.crowdstrike.com</td></tr>
+            <tr><td><code>us-2</code></td><td>falcon.us-2.crowdstrike.com</td><td>api.us-2.crowdstrike.com</td></tr>
+            <tr><td><code>eu-1</code></td><td>falcon.eu-1.crowdstrike.com</td><td>api.eu-1.crowdstrike.com</td></tr>
+            <tr><td><code>us-gov-1</code></td><td>falcon.laggar.gcw.crowdstrike.com</td><td>api.laggar.gcw.crowdstrike.com</td></tr>
+            <tr><td><code>us-gov-2</code></td><td>falcon.us-gov-2.crowdstrike.mil</td><td>api.us-gov-2.crowdstrike.mil</td></tr>
+          </table>
+          <div class="warn"><strong>Common mistake:</strong> Using the wrong region causes authentication failures even with valid credentials. Check your console URL to confirm your region.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How should I handle credentials in CI/CD environments?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Always store API credentials as encrypted secrets in your CI/CD platform — never hardcode them in workflow files or scripts.</p>
+          <ul>
+            <li><strong>GitHub Actions:</strong> Store as repository or organization secrets, then expose as env vars in your workflow.</li>
+            <li><strong>GitLab CI:</strong> Use project-level CI/CD variables (masked and protected).</li>
+            <li><strong>Jenkins:</strong> Use the Credentials Store with a Secret Text credential type.</li>
+          </ul>
+          <p>The CLI picks up credentials from environment variables automatically, so no config file is needed in CI:</p>
+          <pre class="no-prompt"><code>env:
+  FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+  FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+  FALCON_CLOUD: us-1</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Image Scanning ── -->
+    <section class="faq-section" id="image-scan">
+      <div class="section-header">
+        <div class="section-icon">📦</div>
+        <h2>Image Scanning</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan a Docker image?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use the <code>scan image</code> subcommand followed by the image reference:</p>
+          <pre><code># Scan a public image (latest tag)
+fcs scan image nginx:latest
+
+# Scan a specific version
+fcs scan image python:3.11-slim
+
+# Scan by image digest (most reproducible)
+fcs scan image nginx@sha256:abc123...</code></pre>
+          <p>The CLI connects to your local Docker daemon to pull and analyze the image, then submits it to the Falcon API for vulnerability assessment.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan images from private registries?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Authenticate with your registry using <code>docker login</code> first, then scan by referencing the full image path:</p>
+          <pre><code># Docker Hub private repo
+docker login
+fcs scan image myorg/private-app:1.0
+
+# AWS ECR
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin 123456789.dkr.ecr.us-east-1.amazonaws.com
+fcs scan image 123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:latest
+
+# Google Container Registry
+gcloud auth configure-docker
+fcs scan image gcr.io/my-project/myapp:latest
+
+# Azure Container Registry
+az acr login --name myregistry
+fcs scan image myregistry.azurecr.io/myapp:latest</code></pre>
+          <p>The CLI uses your existing Docker credentials, so any registry Docker can pull from is supported.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What timeout should I use for large images?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The default timeout may not be sufficient for large images. Use the <code>--timeout</code> flag (value in seconds):</p>
+          <table>
+            <tr><th>Image Size</th><th>Recommended Timeout</th></tr>
+            <tr><td>Small (&lt; 200MB)</td><td>120s (default)</td></tr>
+            <tr><td>Medium (200MB–1GB)</td><td>300s</td></tr>
+            <tr><td>Large (&gt; 1GB)</td><td>600s+</td></tr>
+          </table>
+          <pre><code>fcs scan image --timeout 600 large-image:latest</code></pre>
+          <p>If you consistently hit timeouts, check network bandwidth to the Falcon API endpoint and consider scanning during off-peak hours.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I configure a custom Docker socket?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>By default, the CLI connects to <code>/var/run/docker.sock</code>. Override this with the <code>FCS_SOCKET</code> environment variable or the <code>--socket</code> flag:</p>
+          <pre><code># Unix socket (non-default path)
+export FCS_SOCKET=/run/user/1000/docker.sock
+fcs scan image myapp:latest
+
+# TCP socket
+export FCS_SOCKET=tcp://localhost:2376
+
+# Windows named pipe
+export FCS_SOCKET=npipe:////./pipe/docker_engine</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Can I scan an image that hasn't been pushed to a registry?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. If the image exists in your local Docker daemon (e.g., just built with <code>docker build</code>), the CLI can scan it directly by its local tag — no registry push required.</p>
+          <pre><code># Build an image
+docker build -t myapp:dev .
+
+# Scan it immediately
+fcs scan image myapp:dev</code></pre>
+          <p>This makes it easy to shift security scanning left — scan before you push.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I enable verbose/debug output for a scan?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use the <code>--verbose</code> flag, or set <code>FCS_DEBUG=true</code> for detailed API-level logging:</p>
+          <pre><code># Verbose mode
+fcs --verbose scan image nginx:latest
+
+# Debug mode (API calls, full response payloads)
+FCS_DEBUG=true fcs scan image nginx:latest</code></pre>
+          <p>Verbose output is useful for understanding what's happening during a scan. Debug mode is helpful when troubleshooting authentication or connectivity issues.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── IaC Scanning ── -->
+    <section class="faq-section" id="iac-scan">
+      <div class="section-header">
+        <div class="section-icon">&lt;/&gt;</div>
+        <h2>IaC Scanning</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What IaC file types are supported?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The FCS CLI supports scanning the following Infrastructure as Code formats:</p>
+          <ul>
+            <li><strong>Terraform</strong> — <code>.tf</code> files and directories</li>
+            <li><strong>Kubernetes</strong> — YAML manifests (<code>deployment.yaml</code>, <code>pod.yaml</code>, etc.)</li>
+            <li><strong>CloudFormation</strong> — AWS CloudFormation templates (YAML or JSON)</li>
+            <li>Additional IaC types may be supported — check the Falcon console for the latest list.</li>
+          </ul>
+          <p>The CLI detects IaC types automatically based on file contents, so you typically don't need to specify the type explicitly.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan a Terraform directory?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Point <code>fcs scan iac</code> at the directory containing your <code>.tf</code> files:</p>
+          <pre><code># Scan current directory
+fcs scan iac .
+
+# Scan a specific path
+fcs scan iac ./terraform/environments/production
+
+# Output as JSON
+fcs scan iac ./terraform --output json</code></pre>
+          <p>The CLI recursively scans all <code>.tf</code> files under the specified path.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan Kubernetes manifests?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Pass the path to your manifest directory or a single file:</p>
+          <pre><code># Scan all manifests in a directory
+fcs scan iac ./kubernetes/
+
+# Scan a single manifest
+fcs scan iac deployment.yaml
+
+# Common issues it detects in Kubernetes:
+# - Privileged containers
+# - Missing resource limits
+# - Containers running as root
+# - Writable root filesystems
+# - Missing network policies</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Can I scan multiple IaC types in a single command?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Yes. Point the command at a directory that contains multiple IaC types and the CLI will detect and scan all of them:</p>
+          <pre><code># Scan a repo root containing Terraform, Kubernetes, and CloudFormation
+fcs scan iac ./infrastructure/</code></pre>
+          <p>Results will be grouped by resource type in the output, making it easy to see issues across your entire infrastructure footprint.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I use IaC scanning as a pre-commit git hook?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Add the following to <code>.git/hooks/pre-commit</code> (and make it executable with <code>chmod +x</code>):</p>
+          <pre class="no-prompt"><code>#!/bin/bash
+# Pre-commit hook: scan IaC changes before committing
+STAGED_IAC=$(git diff --cached --name-only | grep -E '\.(tf|yaml|yml|json)$')
+
+if [ -n "$STAGED_IAC" ]; then
+  echo "Running FCS IaC scan on staged files..."
+  fcs scan iac . --output json | \
+    jq -r '.issues[] | select(.severity == "CRITICAL") | .message' | \
+    while read line; do
+      echo "CRITICAL: $line"
+      exit 1
+    done
+fi</code></pre>
+          <p>This blocks commits when critical IaC issues are detected in staged files.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Output & Reporting ── -->
+    <section class="faq-section" id="output">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <h2>Output &amp; Reporting</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">What output formats are available?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The FCS CLI supports three output formats:</p>
+          <ul>
+            <li><strong>Human-readable</strong> (default) — Formatted text output suitable for terminal review</li>
+            <li><strong>JSON</strong> (<code>--output json</code>) — Machine-readable structured output, ideal for piping to <code>jq</code> or storing as artifacts</li>
+            <li><strong>SARIF</strong> (<code>--output sarif</code>) — Static Analysis Results Interchange Format, used by GitHub Advanced Security and other SAST tools</li>
+          </ul>
+          <pre><code>fcs scan image nginx:latest --output json > results.json
+fcs scan image nginx:latest --output sarif > results.sarif</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I parse scan results with jq?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <pre><code># Count vulnerabilities by severity
+fcs scan image nginx:latest --output json | \
+  jq '[.vulnerabilities[].severity] | group_by(.) | map({(.[0]): length}) | add'
+
+# List only critical vulnerabilities
+fcs scan image nginx:latest --output json | \
+  jq '.vulnerabilities[] | select(.severity == "CRITICAL") | {cve: .cve_id, package: .package_name}'
+
+# Get total vulnerability count
+fcs scan image nginx:latest --output json | \
+  jq '.vulnerabilities | length'
+
+# Check if any fixable criticals exist
+fcs scan image nginx:latest --output json | \
+  jq '[.vulnerabilities[] | select(.severity == "CRITICAL" and .fix_available == true)] | length'</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I upload scan results to GitHub's Security tab?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Output results in SARIF format, then use the <code>github/codeql-action/upload-sarif</code> action:</p>
+          <pre class="no-prompt"><code>- name: Run FCS image scan
+  run: fcs scan image ${{ env.IMAGE }} --output sarif > results.sarif
+
+- name: Upload SARIF to GitHub Security
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: results.sarif
+  if: always()  # Upload even if scan finds issues</code></pre>
+          <p>Results will appear in the <strong>Security → Code scanning alerts</strong> tab of your repository.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I generate an HTML report from scan results?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Save the scan results as JSON, then use <code>jq</code> to transform them into an HTML report:</p>
+          <pre><code># Save JSON results
+fcs scan image nginx:latest --output json > scan-results.json
+
+# Extract summary fields to build a report
+jq -r '
+  "<html><body>",
+  "<h1>FCS Scan Report</h1>",
+  "<h2>Image: " + .image + "</h2>",
+  "<p>Total vulnerabilities: " + (.vulnerabilities | length | tostring) + "</p>",
+  "<table><tr><th>Severity</th><th>Count</th></tr>",
+  ([.vulnerabilities[].severity] | group_by(.) | map(
+    "<tr><td>" + .[0] + "</td><td>" + (length | tostring) + "</td></tr>"
+  ) | .[]),
+  "</table></body></html>"
+' scan-results.json > report.html</code></pre>
+          <p>For richer reporting, consider piping the JSON output to a dedicated SAST reporting tool, or uploading SARIF output to GitHub Advanced Security for integrated vulnerability tracking.</p>
+          <div class="note"><strong>Requirement:</strong> <code>jq</code> must be installed for JSON parsing.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I archive scan results as CI/CD artifacts?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>In GitHub Actions, use the <code>actions/upload-artifact</code> action after scanning:</p>
+          <pre class="no-prompt"><code>- name: Scan image
+  run: |
+    mkdir -p scan-results
+    fcs scan image $IMAGE --output json > scan-results/image-scan.json
+    fcs scan iac ./terraform --output json > scan-results/iac-scan.json
+
+- name: Archive scan results
+  uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: security-scan-results
+    path: scan-results/
+    retention-days: 30</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CI/CD ── -->
+    <section class="faq-section" id="cicd">
+      <div class="section-header">
+        <div class="section-icon">⚙</div>
+        <h2>CI/CD Integration</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I integrate the FCS CLI with GitHub Actions?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Store your Falcon API credentials as encrypted repository secrets (<code>FALCON_CLIENT_ID</code>, <code>FALCON_CLIENT_SECRET</code>), then download and run the CLI in your job steps.</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — Your API credentials must first be created in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys</strong>.</div></div>
+          <p>A minimal GitHub Actions job looks like this:</p>
+          <pre class="no-prompt"><code>jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download FCS CLI
+        env:
+          FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+          FALCON_CLOUD: us-1
+        run: |
+          TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
+            -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
+            | jq -r '.access_token')
+          curl -sL -H "Authorization: Bearer ${TOKEN}" \
+            "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
+            -o fcs && chmod +x fcs && sudo mv fcs /usr/local/bin/
+
+      - name: Scan image
+        env:
+          FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+          FALCON_CLOUD: us-1
+        run: fcs scan image myapp:${{ github.sha }}</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I cache the FCS CLI binary in GitHub Actions?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use <code>actions/cache</code> keyed on the CLI version to avoid re-downloading on every run:</p>
+          <pre class="no-prompt"><code>- name: Cache FCS CLI
+  uses: actions/cache@v4
+  id: cache-fcs
+  with:
+    path: /usr/local/bin/fcs
+    key: fcs-cli-${{ runner.os }}-${{ env.FCS_VERSION }}
+
+- name: Download FCS CLI
+  if: steps.cache-fcs.outputs.cache-hit != 'true'
+  env:
+    FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
+    FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+    FALCON_CLOUD: us-1
+  run: |
+    TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
+      -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
+      | jq -r '.access_token')
+    curl -sL -H "Authorization: Bearer ${TOKEN}" \
+      "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
+      -o fcs && chmod +x fcs && sudo mv fcs /usr/local/bin/</code></pre>
+          <p>This is especially valuable in matrix builds scanning multiple images, where the binary would otherwise be downloaded once per matrix entry.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I gate a pipeline based on scan results?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Scan with JSON output, use <code>jq</code> to extract severity counts, and fail the pipeline with a non-zero exit code when thresholds are exceeded:</p>
+          <pre><code># Scan and evaluate
+fcs scan image myapp:latest --output json > results.json
+
+CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' results.json)
+HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' results.json)
+
+if (( CRITICAL > 0 )); then
+  echo "Build blocked: $CRITICAL critical vulnerabilities found"
+  exit 1
+fi
+
+if (( HIGH > 5 )); then
+  echo "Build blocked: $HIGH high-severity issues exceed threshold of 5"
+  exit 1
+fi
+
+echo "Security gate passed."</code></pre>
+          <p>To warn without blocking during a gradual rollout, replace <code>exit 1</code> with a logged warning and exit <code>0</code>. Tighten the thresholds once teams have addressed the backlog.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I integrate with GitLab CI?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Add this to your <code>.gitlab-ci.yml</code>. Store credentials in GitLab CI/CD variables (masked and protected):</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — Your API credentials must first be created in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys</strong>.</div></div>
+          <pre class="no-prompt"><code>fcs-scan:
+  stage: security
+  image: docker:24
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache curl jq
+    - |
+      TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
+        -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
+        | jq -r '.access_token')
+      curl -sL -H "Authorization: Bearer ${TOKEN}" \
+        "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
+        -o fcs && chmod +x fcs && mv fcs /usr/local/bin/
+  script:
+    - fcs scan image $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --output sarif > gl-sast-report.json
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
+    when: always</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I integrate with Jenkins?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use the Jenkins Credentials Store for secrets and a declarative pipeline. The CLI is downloaded at runtime using the Falcon API:</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — Create your API credentials in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys</strong>, then store the Client ID and Secret in the Jenkins Credentials Store as Secret Text entries.</div></div>
+          <pre class="no-prompt"><code>pipeline {
+    agent any
+    environment {
+        FALCON_CLIENT_ID = credentials('falcon-client-id')
+        FALCON_CLIENT_SECRET = credentials('falcon-client-secret')
+        FALCON_CLOUD = 'us-1'
+    }
+    stages {
+        stage('Download FCS CLI') {
+            steps {
+                sh '''
+                  TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
+                    -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
+                    | jq -r '.access_token')
+                  curl -sL -H "Authorization: Bearer ${TOKEN}" \
+                    "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
+                    -o fcs && chmod +x fcs
+                '''
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                sh './fcs scan image ${IMAGE_NAME}:${BUILD_NUMBER} --output json > results.json'
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'results.json'
+                }
+            }
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I post scan results as a pull request comment?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>After scanning, extract a summary with <code>jq</code> and post it using the GitHub CLI or API. The provided workflow in <code>.github/workflows/fcs-scan.yml</code> includes a ready-made step for this:</p>
+          <pre class="no-prompt"><code>- name: Post PR comment
+  if: github.event_name == 'pull_request'
+  uses: actions/github-script@v7
+  with:
+    script: |
+      const fs = require('fs');
+      const results = JSON.parse(fs.readFileSync('results.json'));
+      const critical = results.vulnerabilities.filter(v => v.severity === 'CRITICAL').length;
+      const high = results.vulnerabilities.filter(v => v.severity === 'HIGH').length;
+      await github.rest.issues.createComment({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        body: `## FCS Scan Results\n- Critical: ${critical}\n- High: ${high}`
+      });</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Advanced ── -->
+    <section class="faq-section" id="advanced">
+      <div class="section-header">
+        <div class="section-icon">★</div>
+        <h2>Advanced Features</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan multiple images in batch?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Create a text file with one image per line (lines starting with <code>#</code> are treated as comments), then loop over it in a shell script:</p>
+          <pre class="no-prompt"><code># images.txt
+nginx:latest
+redis:7-alpine
+python:3.11-slim
+# Comments are supported
+node:20-alpine</code></pre>
+          <pre><code>mkdir -p scan-results
+
+while IFS= read -r image || [[ -n "$image" ]]; do
+  # Skip blank lines and comments
+  [[ -z "$image" || "$image" == \#* ]] && continue
+  echo "Scanning: $image"
+  safe_name=$(echo "$image" | tr '/:' '--')
+  fcs scan image "$image" --output json > "scan-results/${safe_name}.json"
+done < images.txt</code></pre>
+          <p>To run scans in parallel, use <code>&amp;</code> with a concurrency limit:</p>
+          <pre><code>MAX_PARALLEL=4
+count=0
+while IFS= read -r image || [[ -n "$image" ]]; do
+  [[ -z "$image" || "$image" == \#* ]] && continue
+  fcs scan image "$image" --output json > "scan-results/$(echo $image | tr '/:' '--').json" &
+  (( count++ ))
+  (( count % MAX_PARALLEL == 0 )) && wait
+done < images.txt
+wait</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan all Docker images currently in my local daemon?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Use <code>docker image ls</code> to enumerate local images, then loop through and scan each one:</p>
+          <pre><code># List all local images and scan each one
+docker image ls --format '{{.Repository}}:{{.Tag}}' \
+  | grep -v '<none>' \
+  | while read image; do
+    echo "Scanning: $image"
+    safe_name=$(echo "$image" | tr '/:' '--')
+    fcs scan image "$image" --output json > "scan-results/${safe_name}.json"
+  done</code></pre>
+          <div class="warn"><strong>Note:</strong> On systems with many images this can take significant time. The <code>grep -v '&lt;none&gt;'</code> filter skips untagged intermediate layers.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I run scans in parallel?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Both batch scan scripts support a <code>--parallel</code> flag that sets the maximum number of concurrent scans:</p>
+          <pre><code># Run up to 4 scans concurrently
+./scripts/batch-scan-images.sh --parallel 4 images.txt</code></pre>
+          <div class="note"><strong>Tip:</strong> Parallelism is limited by available CPU, network bandwidth to the Falcon API, and your API rate limits. Start with 2–4 and tune from there. Avoid setting this too high in shared CI environments.</div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I add logging and retry logic to scans for production use?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>For production cron jobs and scheduled automation, wrap the <code>fcs</code> command with retry logic, timestamped logging, and failure alerting. Here's a minimal pattern:</p>
+          <pre class="no-prompt"><code>#!/bin/bash
+set -euo pipefail
+
+LOG_FILE="/var/log/fcs/scan-$(date +%Y%m%d-%H%M%S).log"
+MAX_RETRIES=3
+RETRY_DELAY=30
+
+run_with_retry() {
+  local attempt=1
+  until fcs "$@" 2>&1 | tee -a "$LOG_FILE"; do
+    if (( attempt >= MAX_RETRIES )); then
+      echo "FAILED after $MAX_RETRIES attempts" | tee -a "$LOG_FILE"
+      # Optionally: send Slack/PagerDuty alert here
+      exit 1
+    fi
+    echo "Attempt $attempt failed. Retrying in ${RETRY_DELAY}s..." | tee -a "$LOG_FILE"
+    (( attempt++ ))
+    sleep "$RETRY_DELAY"
+  done
+}
+
+run_with_retry scan image nginx:latest --output json</code></pre>
+          <p>Key additions for production readiness:</p>
+          <ul>
+            <li><strong>Logging</strong> — Tee output to a timestamped file for audit trails</li>
+            <li><strong>Retries</strong> — Handle transient API timeouts gracefully</li>
+            <li><strong>Alerting</strong> — Post to Slack via webhook or trigger PagerDuty on persistent failure</li>
+            <li><strong>Exit codes</strong> — Use <code>set -e</code> to propagate failures to cron/scheduling systems</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I scan images across multiple CrowdStrike regions?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Run the same scan against each region's API endpoint by switching the <code>FALCON_CLOUD</code> environment variable (or <code>--falcon-cloud</code> flag) between runs:</p>
+          <pre><code>mkdir -p multi-region-results
+
+for region in us-1 us-2 eu-1; do
+  echo "Scanning against region: $region"
+  FALCON_CLOUD=$region fcs scan image nginx:latest \
+    --output json > "multi-region-results/${region}.json"
+done
+
+# Compare critical counts across regions
+for f in multi-region-results/*.json; do
+  region=$(basename "$f" .json)
+  count=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' "$f")
+  echo "$region: $count critical"
+done</code></pre>
+          <p>If you have separate API credentials per region, use different profiles or set <code>FALCON_CLIENT_ID</code> and <code>FALCON_CLIENT_SECRET</code> per loop iteration.</p>
+          <div class="console"><div><strong>Falcon Console Required</strong> — Each region requires its own API credentials created in the corresponding regional Falcon console instance. Ensure you log in to the correct regional console when creating each set of credentials.</div></div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I enforce severity-based security policies?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Run the scan with JSON output, then use <code>jq</code> to extract counts and apply thresholds in shell:</p>
+          <pre><code># Scan and save results
+fcs scan image myapp:latest --output json > results.json
+
+# Count by severity
+CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' results.json)
+HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' results.json)
+MEDIUM=$(jq '[.vulnerabilities[] | select(.severity=="MEDIUM")] | length' results.json)
+
+echo "Critical: $CRITICAL | High: $HIGH | Medium: $MEDIUM"
+
+# Enforce thresholds — exit 1 to fail a CI pipeline
+if (( CRITICAL > 0 )); then
+  echo "POLICY VIOLATION: $CRITICAL critical vulnerabilities found"
+  exit 1
+fi
+
+if (( HIGH > 10 )); then
+  echo "POLICY VIOLATION: $HIGH high vulnerabilities exceed limit of 10"
+  exit 1
+fi
+
+echo "Policy check passed."</code></pre>
+          <p>The same pattern works for IaC scan results — replace <code>.vulnerabilities[]</code> with the appropriate field path from the IaC JSON output (<code>.issues[]</code>).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Troubleshooting ── -->
+    <section class="faq-section" id="troubleshooting">
+      <div class="section-header">
+        <div class="section-icon">!</div>
+        <h2>Troubleshooting</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">I'm getting an authentication error — what should I check?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Work through this checklist:</p>
+          <ol>
+            <li><strong>Verify credentials</strong> — Confirm the Client ID and Secret are correct and haven't been revoked.</li>
+            <li><strong>Check the region</strong> — The most common cause. Your configured region must match your Falcon console URL. A <code>us-2</code> tenant using <code>us-1</code> credentials will always fail.</li>
+            <li><strong>Check API scopes</strong> — Ensure the API client has the required scopes for the operation you're performing.</li>
+            <li><strong>Check for env var conflicts</strong> — Run <code>env | grep FALCON</code> to see if stale environment variables are overriding your config file.</li>
+            <li><strong>Enable debug mode</strong> — Run with <code>FCS_DEBUG=true</code> to see the full API request/response for more details.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">I'm getting a "context deadline exceeded" error — what does that mean?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>This is a timeout error — the scan took longer than the configured timeout allows. Fix it by increasing the timeout:</p>
+          <pre><code># For a large image
+fcs scan image --timeout 600 large-image:latest
+
+# Set a default in the environment
+export FCS_TIMEOUT=600</code></pre>
+          <p>If you're still hitting timeouts after increasing to 600s+, check:</p>
+          <ul>
+            <li>Network latency to the Falcon API endpoint</li>
+            <li>Whether the Docker pull itself is slow (large image on a slow connection)</li>
+            <li>Whether the CI runner has restricted egress bandwidth</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">The "fcs" command is not found after installation</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The binary is installed but its directory isn't on your <code>PATH</code>. First, find where it was installed:</p>
+          <pre><code>find /usr/local /opt /home -name 'fcs' 2>/dev/null</code></pre>
+          <p>Then add that directory to your <code>PATH</code>. For example, if it's in <code>/usr/local/bin</code>:</p>
+          <pre class="no-prompt"><code># Add to ~/.zshrc or ~/.bashrc
+export PATH="/usr/local/bin:$PATH"
+
+# Reload
+source ~/.zshrc</code></pre>
+          <p>To avoid this in future installs, use <code>--install-dir</code> to specify a directory that's already on your PATH:</p>
+          <pre><code>./scripts/install-fcs-cli.sh --install-dir /usr/local/bin</code></pre>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">I can't connect to the Docker daemon during a scan</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The CLI connects to Docker via the socket at <code>/var/run/docker.sock</code> by default. Common causes and fixes:</p>
+          <ul>
+            <li><strong>Docker isn't running</strong> — Start the Docker daemon: <code>sudo systemctl start docker</code></li>
+            <li><strong>Permission denied</strong> — Add your user to the <code>docker</code> group: <code>sudo usermod -aG docker $USER</code>, then re-login.</li>
+            <li><strong>Non-standard socket path</strong> — Specify the socket explicitly: <code>export FCS_SOCKET=/custom/path/docker.sock</code></li>
+            <li><strong>In CI with Docker-in-Docker</strong> — Set <code>FCS_SOCKET=tcp://docker:2375</code> if using DinD.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">How do I enable debug logging for detailed troubleshooting?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>Two levels of additional logging are available:</p>
+          <pre><code># Verbose: human-readable scan progress detail
+fcs --verbose scan image nginx:latest
+
+# Debug: full API request/response payloads
+FCS_DEBUG=true fcs scan image nginx:latest
+
+# Both together
+FCS_DEBUG=true fcs --verbose scan image nginx:latest 2>&1 | tee debug.log</code></pre>
+          <p>Capture to a file and share the output when filing a support ticket or reporting an issue.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggle(this)">
+          <span class="q-text">Scans work locally but fail in CI — how do I diagnose this?</span>
+          <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-answer">
+          <p>The most common causes of CI-only failures:</p>
+          <ul>
+            <li><strong>Missing or wrong secrets</strong> — Verify that <code>FALCON_CLIENT_ID</code> and <code>FALCON_CLIENT_SECRET</code> are set and the values are correct. Check that secret masking isn't corrupting the value (some CI systems mask partial matches).</li>
+            <li><strong>Wrong region</strong> — Ensure <code>FALCON_CLOUD</code> is set to the correct region in your CI environment.</li>
+            <li><strong>No Docker daemon</strong> — CI runners often need Docker-in-Docker or a Docker socket mount. Verify with <code>docker info</code> in a preceding step.</li>
+            <li><strong>Egress blocked</strong> — Check if your CI runner has outbound HTTPS access to <code>api.crowdstrike.com</code> (or your regional endpoint).</li>
+            <li><strong>Timeout too short</strong> — CI runners can have slower network throughput. Increase <code>--timeout</code>.</li>
+          </ul>
+          <p>Add <code>FCS_DEBUG=true</code> to your CI environment variables temporarily to get full diagnostic output.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>FCS CLI · Falcon Cloud Security</span>
+    <span>CrowdStrike · crowdstrike.com</span>
+  </footer>
+
+</div>
+
+<script>
+  // ── Accordion toggle ──
+  function toggle(btn) {
+    const item = btn.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+    item.classList.toggle('open', !wasOpen);
+  }
+
+  // ── Search ──
+  const searchInput = document.getElementById('search');
+  const noResults = document.getElementById('no-results');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    document.querySelectorAll('.faq-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      const match = !q || text.includes(q);
+      item.style.display = match ? '' : 'none';
+      if (match) {
+        visibleCount++;
+        if (q) item.classList.add('open');
+        else item.classList.remove('open');
+      }
+    });
+
+    // Show/hide section headers based on visible items
+    document.querySelectorAll('.faq-section').forEach(section => {
+      const visible = [...section.querySelectorAll('.faq-item')].some(i => i.style.display !== 'none');
+      section.style.display = visible ? '' : 'none';
+    });
+
+    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+  });
+
+  // ── Active sidebar link on scroll ──
+  const sections = document.querySelectorAll('.faq-section');
+  const navLinks = document.querySelectorAll('#sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

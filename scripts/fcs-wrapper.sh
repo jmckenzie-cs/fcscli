@@ -89,6 +89,34 @@ EOF
         "$SLACK_WEBHOOK_URL" &>/dev/null || true
 }
 
+# Detect the container daemon socket and set FCS_SOCKET_ARG
+# fcs ignores DOCKER_HOST — use --socket flag instead
+detect_socket() {
+    if [[ -n "${FCS_SOCKET:-}" ]]; then
+        FCS_SOCKET_ARG="--socket ${FCS_SOCKET}"
+        log_info "Using FCS_SOCKET=${FCS_SOCKET}"
+        return
+    fi
+
+    local sockets=(
+        "/Users/$(whoami)/.rd/docker.sock"
+        "/var/run/docker.sock"
+        "/run/docker.sock"
+        "/run/user/1000/podman/podman.sock"
+        "/run/containerd/containerd.sock"
+    )
+    for sock in "${sockets[@]}"; do
+        if [[ -S "$sock" ]]; then
+            FCS_SOCKET_ARG="--socket unix://${sock}"
+            log_info "Auto-detected socket: unix://${sock}"
+            return
+        fi
+    done
+
+    FCS_SOCKET_ARG=""
+    log_warn "No container daemon socket found; fcs will use its own discovery"
+}
+
 # Check prerequisites
 check_prerequisites() {
     if ! command -v fcs &> /dev/null; then
@@ -109,7 +137,7 @@ execute_fcs_with_retry() {
     while [[ $attempt -le $MAX_RETRIES ]]; do
         log_info "Attempt $attempt of $MAX_RETRIES"
 
-        if fcs "$@"; then
+        if fcs "$@" $FCS_SOCKET_ARG; then
             log_success "Command succeeded"
             return 0
         else
@@ -252,6 +280,7 @@ main() {
     fi
 
     setup_logging
+    detect_socket
     check_prerequisites
 
     fcs_wrapper "$@"
