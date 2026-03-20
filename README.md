@@ -45,15 +45,22 @@ The FCS CLI is a powerful security tool that enables:
 
 ### Option 1: Manual Installation (Recommended for First-Time Users)
 
-```bash
-# Download the appropriate binary for your platform
-# Visit: https://falcon.crowdstrike.com > Support and resources > Tool downloads
+**Note**: FCS CLI download requires authentication through Falcon Console (no public URLs available)
 
-# For macOS (Apple Silicon)
-curl -L -o fcs_2.2.0_Darwin_arm64.tar.gz https://path-to-download/fcs_2.2.0_Darwin_arm64.tar.gz
+1. **Download from Falcon Console:**
+   - Go to: https://falcon.crowdstrike.com
+   - Navigate to: **Support and resources > Resources and tools > Tool downloads**
+   - Search for: **FCS CLI** or **CLI**
+   - Download file for your platform (e.g., `fcs_2.2.0_Darwin_arm64.tar.gz`)
+
+2. **Install the binary:**
+
+```bash
+# Navigate to downloads directory
+cd ~/Downloads
 
 # Extract and make executable
-tar -xvzf fcs_2.2.0_Darwin_arm64.tar.gz
+tar -xvzf fcs_*.tar.gz
 chmod u+x fcs
 
 # Move to PATH
@@ -65,11 +72,20 @@ fcs --version
 
 ### Option 2: Automated Installation Script
 
-Use the provided installation script from this repository:
+Use the provided installation script. It will prompt you to download from Falcon Console:
 
 ```bash
+# The script will guide you through the download process
 ./scripts/install-fcs-cli.sh --os darwin --arch arm64
+
+# Or let it auto-detect your platform
+./scripts/install-fcs-cli.sh
 ```
+
+The script checks for the file in:
+- Current directory (`.`)
+- Downloads folder (`~/Downloads`)
+- Prompts for manual download if not found
 
 ### Option 3: Self-Update (If Already Installed)
 

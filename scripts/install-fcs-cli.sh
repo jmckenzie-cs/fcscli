@@ -147,21 +147,56 @@ download_fcs() {
 
     log_info "Downloading FCS CLI ${VERSION} for ${OS}/${ARCH}..."
     log_info "Filename: $filename"
-
-    # Note: Replace with actual download URL from Falcon console
-    # This is a placeholder - users need to get the actual URL
-    log_warn "Please manually download ${filename} from:"
-    log_warn "  Falcon Console > Support and resources > Tool downloads"
-    log_warn "Then place it in: ${tmp_dir}"
     echo
-    read -p "Press Enter after downloading the file to ${tmp_dir}/${filename}..."
 
-    if [[ ! -f "${tmp_dir}/${filename}" ]]; then
-        log_error "File not found: ${tmp_dir}/${filename}"
-        exit 1
+    # Check if file exists in current directory
+    if [[ -f "./${filename}" ]]; then
+        log_info "Found ${filename} in current directory"
+        cp "./${filename}" "${tmp_dir}/"
+        echo "$tmp_dir"
+        return 0
     fi
 
-    echo "$tmp_dir"
+    # Check in ~/Downloads
+    if [[ -f "$HOME/Downloads/${filename}" ]]; then
+        log_info "Found ${filename} in ~/Downloads"
+        cp "$HOME/Downloads/${filename}" "${tmp_dir}/"
+        echo "$tmp_dir"
+        return 0
+    fi
+
+    # Manual download required
+    log_warn "FCS CLI requires manual download from Falcon Console"
+    log_warn "(Authentication required - no public URL available)"
+    echo
+    log_info "Please download ${filename}:"
+    log_info "  1. Go to: https://falcon.crowdstrike.com"
+    log_info "  2. Navigate: Support and resources > Resources and tools > Tool downloads"
+    log_info "  3. Search for: FCS CLI"
+    log_info "  4. Download: ${filename}"
+    log_info "  5. Save to: ${tmp_dir}/ OR current directory"
+    echo
+    read -p "Press Enter after downloading the file..."
+
+    # Check again after user downloads
+    if [[ -f "${tmp_dir}/${filename}" ]]; then
+        echo "$tmp_dir"
+        return 0
+    elif [[ -f "./${filename}" ]]; then
+        cp "./${filename}" "${tmp_dir}/"
+        echo "$tmp_dir"
+        return 0
+    elif [[ -f "$HOME/Downloads/${filename}" ]]; then
+        cp "$HOME/Downloads/${filename}" "${tmp_dir}/"
+        echo "$tmp_dir"
+        return 0
+    else
+        log_error "File not found in any of these locations:"
+        log_error "  - ${tmp_dir}/${filename}"
+        log_error "  - ./${filename}"
+        log_error "  - $HOME/Downloads/${filename}"
+        exit 1
+    fi
 }
 
 # Extract and install

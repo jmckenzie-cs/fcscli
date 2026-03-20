@@ -10,19 +10,34 @@ Get up and running with the CrowdStrike Falcon Cloud Security CLI in 5 minutes.
 
 ## Step 1: Download FCS CLI (2 minutes)
 
-### Option A: Manual Download
+**Important**: FCS CLI requires authentication - downloads are only available through Falcon Console.
+
+### Option A: Manual Download (Recommended)
 
 1. Go to Falcon console: [https://falcon.crowdstrike.com](https://falcon.crowdstrike.com)
 2. Navigate to **Support and resources > Tool downloads**
-3. Search for "FCS CLI"
-4. Download for your platform
+3. Search for "**FCS CLI**"
+4. Download for your platform:
+   - macOS Apple Silicon: `fcs_2.2.0_Darwin_arm64.tar.gz`
+   - macOS Intel: `fcs_2.2.0_Darwin_x86_64.tar.gz`
+   - Linux x86_64: `fcs_2.2.0_Linux_x86_64.tar.gz`
+   - Windows: `fcs_2.2.0_Windows_x86_64.zip`
 
-### Option B: Use Our Script
+5. Install:
+```bash
+cd ~/Downloads
+tar -xvzf fcs_*.tar.gz
+chmod u+x fcs
+sudo mv fcs /usr/local/bin/
+```
+
+### Option B: Use Our Installation Script
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/fcs-cli-examples.git
-cd fcs-cli-examples
+git clone https://github.com/jmckenzie-cs/fcscli.git
+cd fcscli
 ./scripts/install-fcs-cli.sh --os darwin --arch arm64
+# Script will prompt you to download if not found
 ```
 
 ## Step 2: Create API Credentials (1 minute)
