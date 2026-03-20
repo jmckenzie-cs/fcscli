@@ -29,6 +29,7 @@ on:
 env:
   FCS_VERSION: '2.2.0'
   FALCON_CLOUD: 'us-1'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   setup:
