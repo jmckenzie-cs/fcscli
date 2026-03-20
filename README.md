@@ -597,9 +597,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Resources
 
-- [CrowdStrike Falcon Documentation]([https://falcon.crowdstrike.com/documentation](https://docs.crowdstrike.com/home))
-- [FCS CLI Official Documentation]([https://falcon.crowdstrike.com/documentation/cloud-security](https://docs.crowdstrike.com/r/s1018dc7))
-- [CrowdStrike API Documentation]([https://falcon.crowdstrike.com/documentation/api](https://docs.crowdstrike.com/r/a2a7fc0e))
+- [CrowdStrike Falcon Documentation](https://docs.crowdstrike.com/home)
+- [FCS CLI Official Documentation](https://docs.crowdstrike.com/r/s1018dc7)
+- [CrowdStrike API Documentation](https://docs.crowdstrike.com/r/a2a7fc0e)
 
 ## Support
 
