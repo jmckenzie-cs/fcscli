@@ -736,7 +736,7 @@
           <p>There are four installation methods:</p>
           <ol>
             <li><strong>Manual download from Falcon console</strong> — Download the binary directly from the Falcon console and place it on your <code>PATH</code>. Requires Falcon console access — see <em>How do I manually download the FCS CLI from the Falcon console?</em> below.</li>
-            <li><strong>Assisted install script</strong> — An install script (<code>install-fcs-cli.sh</code>) is provided in this repository that auto-detects your platform and architecture and handles binary placement. You must first obtain the binary via the manual download method.</li>
+            <li><strong>Assisted install script</strong> — An install script (<code>install-fcs-cli.sh</code>) is available in the repository that auto-detects your platform and architecture, downloads the correct binary via the Falcon API, and handles placement automatically. Requires the <strong>Cloud Security Tools Download: Read</strong> API scope.</li>
             <li><strong>Programmatic API download</strong> — Authenticate with the Falcon API to download the binary without console access. Best for CI/CD pipelines. Requires valid API credentials with the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
             <li><strong>Self-update</strong> — If the CLI is already installed, run <code>fcs update</code> to update to the latest version in-place. Also requires the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
           </ol>
