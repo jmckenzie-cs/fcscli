@@ -187,14 +187,25 @@ main() {
     local versions_response
     versions_response=$(enumerate_versions "$access_token")
 
-    # Get the first (latest) version
+    # Get the last (latest) version - API returns in chronological order
     local download_info
-    download_info=$(echo "$versions_response" | jq -r '.resources[0]')
+    download_info=$(echo "$versions_response" | jq -r '.resources[-1]')
 
     if [[ "$download_info" == "null" ]] || [[ -z "$download_info" ]]; then
         log_error "No FCS CLI versions found for ${FCS_TARGET_OS}/${FCS_TARGET_ARCH}"
+        log_error "API Response:"
+        echo "$versions_response" | jq '.' >&2
         exit 1
     fi
+
+    # Display available versions
+    local version_count
+    version_count=$(echo "$versions_response" | jq -r '.resources | length')
+    log_info "Found $version_count available versions"
+
+    local latest_version
+    latest_version=$(echo "$download_info" | jq -r '.file_version')
+    log_info "Downloading latest version: $latest_version"
 
     local downloaded_file
     downloaded_file=$(download_fcs_cli "$access_token" "$download_info")

@@ -403,6 +403,23 @@ pipeline {
 
 See [`scripts/download-fcs-cli.sh`](scripts/download-fcs-cli.sh) for a complete example of programmatically downloading the FCS CLI.
 
+**Important**: Set the correct region for your environment:
+
+```bash
+# For us-2 region
+export FALCON_CLIENT_ID="your-client-id"
+export FALCON_CLIENT_SECRET="your-client-secret"
+export FALCON_API_URL="https://api.us-2.crowdstrike.com"
+./scripts/download-fcs-cli.sh
+
+# For us-1 region (default)
+export FALCON_CLIENT_ID="your-client-id"
+export FALCON_CLIENT_SECRET="your-client-secret"
+./scripts/download-fcs-cli.sh
+```
+
+See [Region Configuration](#region-configuration) for all region URLs.
+
 ### 2. Custom Wrapper Script
 
 See [`scripts/fcs-wrapper.sh`](scripts/fcs-wrapper.sh) for a wrapper that adds logging, error handling, and notifications.
