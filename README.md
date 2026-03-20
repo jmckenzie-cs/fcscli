@@ -70,12 +70,13 @@ sudo mv fcs /usr/local/bin/
 fcs --version
 ```
 
-### Option 2: Automated Installation Script
+### Option 2: Assisted Installation Script
 
-Use the provided installation script. It will prompt you to download from Falcon Console:
+Use the provided installation script to extract and install a previously downloaded file:
 
 ```bash
-# The script will guide you through the download process
+# First, download FCS CLI from Falcon Console to ~/Downloads or current directory
+# Then run the installation script
 ./scripts/install-fcs-cli.sh --os darwin --arch arm64
 
 # Or let it auto-detect your platform
@@ -85,9 +86,22 @@ Use the provided installation script. It will prompt you to download from Falcon
 The script checks for the file in:
 - Current directory (`.`)
 - Downloads folder (`~/Downloads`)
-- Prompts for manual download if not found
+- If not found, provides instructions to download from Falcon Console
 
-### Option 3: Self-Update (If Already Installed)
+### Option 3: Programmatic Download (Advanced)
+
+Use the API-based download script with your credentials:
+
+```bash
+export FALCON_CLIENT_ID="your-client-id"
+export FALCON_CLIENT_SECRET="your-client-secret"
+export FALCON_API_URL="https://api.us-2.crowdstrike.com"  # Adjust for your region
+./scripts/download-fcs-cli.sh
+```
+
+This script authenticates via API, downloads the latest version, verifies the hash, and extracts it.
+
+### Option 4: Self-Update (If Already Installed)
 
 ```bash
 # Update to latest version
