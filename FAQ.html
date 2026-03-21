@@ -634,7 +634,7 @@
   <main id="main-content">
     <div class="main-hero">
       <h1>FCS CLI<br /><em>FAQ</em></h1>
-      <p>Answers to the most common questions about installing, configuring, and using the CrowdStrike Falcon Cloud Security CLI for container image and Infrastructure as Code scanning. Written for users who may not have access to the repository scripts — all examples use standard CLI commands and tools.</p>
+      <p>Answers to the most common questions about installing, configuring, and using the CrowdStrike Falcon Cloud Security CLI for container image and Infrastructure as Code scanning.</p>
       <div class="stats-row">
         <div class="stat"><span class="stat-num">47</span><span class="stat-label">Questions</span></div>
         <div class="stat"><span class="stat-num">9</span><span class="stat-label">Topics</span></div>
@@ -736,7 +736,7 @@
           <p>There are four installation methods:</p>
           <ol>
             <li><strong>Manual download from Falcon console</strong> — Download the binary directly from the Falcon console and place it on your <code>PATH</code>. Requires Falcon console access — see <em>How do I manually download the FCS CLI from the Falcon console?</em> below.</li>
-            <li><strong>Assisted install script</strong> — An install script (<code>install-fcs-cli.sh</code>) is available in the repository that auto-detects your platform and architecture, downloads the correct binary via the Falcon API, and handles placement automatically. Requires the <strong>Cloud Security Tools Download: Read</strong> API scope.</li>
+            <li><strong>Assisted install script</strong> — Run <code>scripts/install-fcs-cli.sh</code> from this repository. It auto-detects your platform and architecture, downloads the correct binary via the Falcon API, and handles placement. Requires the <strong>Cloud Security Tools Download: Read</strong> API scope.</li>
             <li><strong>Programmatic API download</strong> — Authenticate with the Falcon API to download the binary without console access. Best for CI/CD pipelines. Requires valid API credentials with the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
             <li><strong>Self-update</strong> — If the CLI is already installed, run <code>fcs update</code> to update to the latest version in-place. Also requires the <strong>Cloud Security Tools Download: Read</strong> scope.</li>
           </ol>
@@ -745,25 +745,23 @@
 
       <div class="faq-item">
         <div class="faq-question" onclick="toggle(this)">
-          <span class="q-text">How do I manually download the FCS CLI from the Falcon console?</span>
+          <span class="q-text">How do I use the assisted install script?</span>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <div class="console"><div><strong>Falcon Console Required</strong> — Navigate to <strong>Cloud Security → Image Assessment → CI/CD Integrations</strong> to access the binary download.</div></div>
-          <p>Once downloaded, move the binary to a directory on your <code>PATH</code> and make it executable:</p>
-          <pre><code># macOS / Linux
-chmod +x fcs
-sudo mv fcs /usr/local/bin/
+          <p>Run <code>scripts/install-fcs-cli.sh</code> with optional flags to control the install:</p>
+          <pre><code># Auto-detect platform and architecture (most common)
+./scripts/install-fcs-cli.sh
 
-# Verify
-fcs --help</code></pre>
-          <p>Choose the correct binary for your platform and architecture from the download page:</p>
-          <table>
-            <tr><th>Platform</th><th>Architecture</th></tr>
-            <tr><td>Linux</td><td><code>amd64</code> or <code>arm64</code></td></tr>
-            <tr><td>macOS</td><td><code>amd64</code> (Intel) or <code>arm64</code> (Apple Silicon)</td></tr>
-            <tr><td>Windows</td><td><code>amd64</code> or <code>arm64</code></td></tr>
-          </table>
+# Specify platform and architecture explicitly
+./scripts/install-fcs-cli.sh --os darwin --arch arm64
+
+# Install to a custom directory
+./scripts/install-fcs-cli.sh --install-dir /usr/local/bin
+
+# Install a specific version
+./scripts/install-fcs-cli.sh --version 1.2.3</code></pre>
+          <p>The script checks for an existing installation, prompts before replacing, and verifies the binary after install.</p>
         </div>
       </div>
 
@@ -773,24 +771,20 @@ fcs --help</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Use the Falcon OAuth2 token endpoint to get a bearer token, then call the sensor download API to retrieve the binary. This approach works without console access and is ideal for CI/CD pipelines.</p>
-          <pre><code># Step 1: Get an OAuth2 token
-TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
-  -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
-  | jq -r '.access_token')
+          <p>Use <code>scripts/download-fcs-cli.sh</code>. It authenticates with the Falcon API using OAuth2, enumerates available versions, downloads the correct binary for your platform, and verifies the SHA256 hash.</p>
+          <pre><code>export FALCON_CLIENT_ID="your-client-id"
+export FALCON_CLIENT_SECRET="your-client-secret"
 
-# Step 2: List available FCS CLI versions
-curl -s -H "Authorization: Bearer ${TOKEN}" \
-  "https://api.crowdstrike.com/sensor-installers/entities/versions/v1?type=fcs" \
-  | jq '.resources[].version'
-
-# Step 3: Download the binary for your platform
-curl -sL -H "Authorization: Bearer ${TOKEN}" \
-  "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
-  -o fcs && chmod +x fcs</code></pre>
-          <p>Replace <code>os</code> and <code>arch</code> with values matching your target platform (<code>linux</code>/<code>darwin</code>/<code>windows</code>, <code>amd64</code>/<code>arm64</code>).</p>
+./scripts/download-fcs-cli.sh</code></pre>
+          <p>Additional environment variables you can set:</p>
+          <table>
+            <tr><th>Variable</th><th>Description</th></tr>
+            <tr><td><code>FALCON_API_URL</code></td><td>Override the API endpoint (for non-US-1 regions)</td></tr>
+            <tr><td><code>FCS_TARGET_OS</code></td><td>Target OS (<code>linux</code>, <code>darwin</code>, <code>windows</code>)</td></tr>
+            <tr><td><code>FCS_TARGET_ARCH</code></td><td>Target architecture (<code>amd64</code>, <code>arm64</code>)</td></tr>
+            <tr><td><code>OUTPUT_DIR</code></td><td>Directory to save the binary (default: current directory)</td></tr>
+          </table>
           <div class="note"><strong>Requirements:</strong> <code>curl</code> and <code>jq</code> must be installed. The API client needs the <strong>Cloud Security Tools Download: Read</strong> scope.</div>
-          <div class="note"><strong>Non-US-1 regions:</strong> Replace <code>api.crowdstrike.com</code> with your regional API endpoint (e.g., <code>api.us-2.crowdstrike.com</code>).</div>
         </div>
       </div>
 
@@ -1277,24 +1271,19 @@ fcs scan image nginx:latest --output json | \
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Save the scan results as JSON, then use <code>jq</code> to transform them into an HTML report:</p>
+          <p>First save JSON output, then use the <code>scripts/generate-report.sh</code> script:</p>
           <pre><code># Save JSON results
 fcs scan image nginx:latest --output json > scan-results.json
 
-# Extract summary fields to build a report
-jq -r '
-  "<html><body>",
-  "<h1>FCS Scan Report</h1>",
-  "<h2>Image: " + .image + "</h2>",
-  "<p>Total vulnerabilities: " + (.vulnerabilities | length | tostring) + "</p>",
-  "<table><tr><th>Severity</th><th>Count</th></tr>",
-  ([.vulnerabilities[].severity] | group_by(.) | map(
-    "<tr><td>" + .[0] + "</td><td>" + (length | tostring) + "</td></tr>"
-  ) | .[]),
-  "</table></body></html>"
-' scan-results.json > report.html</code></pre>
-          <p>For richer reporting, consider piping the JSON output to a dedicated SAST reporting tool, or uploading SARIF output to GitHub Advanced Security for integrated vulnerability tracking.</p>
-          <div class="note"><strong>Requirement:</strong> <code>jq</code> must be installed for JSON parsing.</div>
+# Generate HTML report
+./scripts/generate-report.sh scan-results.json > report.html
+
+# With a custom title
+./scripts/generate-report.sh --title "Production Image Scan" scan-results.json > report.html
+
+# Exclude detailed vulnerability info (summary only)
+./scripts/generate-report.sh --no-details scan-results.json > report.html</code></pre>
+          <div class="note"><strong>Requirement:</strong> <code>jq</code> must be installed for the report generation script.</div>
         </div>
       </div>
 
@@ -1335,9 +1324,9 @@ jq -r '
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Store your Falcon API credentials as encrypted repository secrets (<code>FALCON_CLIENT_ID</code>, <code>FALCON_CLIENT_SECRET</code>), then download and run the CLI in your job steps.</p>
+          <p>A production-ready workflow is provided at <code>.github/workflows/fcs-scan.yml</code> in this repository. It includes image and IaC scanning, SARIF upload, artifact archival, and Slack notifications.</p>
           <div class="console"><div><strong>Falcon Console Required</strong> — Your API credentials must first be created in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys</strong>.</div></div>
-          <p>A minimal GitHub Actions job looks like this:</p>
+          <p>At minimum, a GitHub Actions job looks like this:</p>
           <pre class="no-prompt"><code>jobs:
   security-scan:
     runs-on: ubuntu-latest
@@ -1349,13 +1338,7 @@ jq -r '
           FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
           FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
           FALCON_CLOUD: us-1
-        run: |
-          TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
-            -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
-            | jq -r '.access_token')
-          curl -sL -H "Authorization: Bearer ${TOKEN}" \
-            "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
-            -o fcs && chmod +x fcs && sudo mv fcs /usr/local/bin/
+        run: ./scripts/download-fcs-cli.sh && chmod +x fcs
 
       - name: Scan image
         env:
@@ -1377,22 +1360,12 @@ jq -r '
   uses: actions/cache@v4
   id: cache-fcs
   with:
-    path: /usr/local/bin/fcs
+    path: ~/.local/bin/fcs
     key: fcs-cli-${{ runner.os }}-${{ env.FCS_VERSION }}
 
 - name: Download FCS CLI
   if: steps.cache-fcs.outputs.cache-hit != 'true'
-  env:
-    FALCON_CLIENT_ID: ${{ secrets.FALCON_CLIENT_ID }}
-    FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
-    FALCON_CLOUD: us-1
-  run: |
-    TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
-      -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
-      | jq -r '.access_token')
-    curl -sL -H "Authorization: Bearer ${TOKEN}" \
-      "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
-      -o fcs && chmod +x fcs && sudo mv fcs /usr/local/bin/</code></pre>
+  run: ./scripts/download-fcs-cli.sh</code></pre>
           <p>This is especially valuable in matrix builds scanning multiple images, where the binary would otherwise be downloaded once per matrix entry.</p>
         </div>
       </div>
@@ -1403,25 +1376,20 @@ jq -r '
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Scan with JSON output, use <code>jq</code> to extract severity counts, and fail the pipeline with a non-zero exit code when thresholds are exceeded:</p>
-          <pre><code># Scan and evaluate
-fcs scan image myapp:latest --output json > results.json
+          <p>Use the <code>scripts/enforce-policy.sh</code> script to fail the pipeline when severity thresholds are exceeded:</p>
+          <pre><code># Fail on any critical vulnerability
+./scripts/enforce-policy.sh scan image nginx:latest --severity critical
 
-CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' results.json)
-HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' results.json)
+# Fail if more than 5 high-severity issues
+./scripts/enforce-policy.sh scan image nginx:latest \
+  --max-high 5 \
+  --max-critical 0
 
-if (( CRITICAL > 0 )); then
-  echo "Build blocked: $CRITICAL critical vulnerabilities found"
-  exit 1
-fi
-
-if (( HIGH > 5 )); then
-  echo "Build blocked: $HIGH high-severity issues exceed threshold of 5"
-  exit 1
-fi
-
-echo "Security gate passed."</code></pre>
-          <p>To warn without blocking during a gradual rollout, replace <code>exit 1</code> with a logged warning and exit <code>0</code>. Tighten the thresholds once teams have addressed the backlog.</p>
+# Warn but don't fail (for gradual rollout)
+./scripts/enforce-policy.sh scan image nginx:latest \
+  --severity critical \
+  --no-fail</code></pre>
+          <p>The script exits with code <code>1</code> on policy violations (causing the CI job to fail) and <code>0</code> on pass.</p>
         </div>
       </div>
 
@@ -1442,15 +1410,10 @@ echo "Security gate passed."</code></pre>
     DOCKER_TLS_CERTDIR: ""
   before_script:
     - apk add --no-cache curl jq
-    - |
-      TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
-        -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
-        | jq -r '.access_token')
-      curl -sL -H "Authorization: Bearer ${TOKEN}" \
-        "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
-        -o fcs && chmod +x fcs && mv fcs /usr/local/bin/
+    - ./scripts/download-fcs-cli.sh
+    - chmod +x fcs
   script:
-    - fcs scan image $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --output sarif > gl-sast-report.json
+    - ./fcs scan image $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --output sarif > gl-sast-report.json
   artifacts:
     reports:
       sast: gl-sast-report.json
@@ -1464,7 +1427,7 @@ echo "Security gate passed."</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Use the Jenkins Credentials Store for secrets and a declarative pipeline. The CLI is downloaded at runtime using the Falcon API:</p>
+          <p>Use the Jenkins Credentials Store for secrets and a declarative pipeline:</p>
           <div class="console"><div><strong>Falcon Console Required</strong> — Create your API credentials in the Falcon console under <strong>Support &amp; Resources → API Clients &amp; Keys</strong>, then store the Client ID and Secret in the Jenkins Credentials Store as Secret Text entries.</div></div>
           <pre class="no-prompt"><code>pipeline {
     agent any
@@ -1474,20 +1437,10 @@ echo "Security gate passed."</code></pre>
         FALCON_CLOUD = 'us-1'
     }
     stages {
-        stage('Download FCS CLI') {
-            steps {
-                sh '''
-                  TOKEN=$(curl -s -X POST https://api.crowdstrike.com/oauth2/token \
-                    -d "client_id=${FALCON_CLIENT_ID}&client_secret=${FALCON_CLIENT_SECRET}" \
-                    | jq -r '.access_token')
-                  curl -sL -H "Authorization: Bearer ${TOKEN}" \
-                    "https://api.crowdstrike.com/sensor-installers/entities/download/v2?type=fcs&os=linux&arch=amd64" \
-                    -o fcs && chmod +x fcs
-                '''
-            }
-        }
         stage('Security Scan') {
             steps {
+                sh './scripts/download-fcs-cli.sh'
+                sh 'chmod +x fcs'
                 sh './fcs scan image ${IMAGE_NAME}:${BUILD_NUMBER} --output json > results.json'
             }
             post {
@@ -1540,32 +1493,23 @@ echo "Security gate passed."</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Create a text file with one image per line (lines starting with <code>#</code> are treated as comments), then loop over it in a shell script:</p>
+          <p>Create a text file with one image per line (lines starting with <code>#</code> are treated as comments), then pass it to <code>scripts/batch-scan-images.sh</code>:</p>
           <pre class="no-prompt"><code># images.txt
 nginx:latest
 redis:7-alpine
 python:3.11-slim
 # Comments are supported
 node:20-alpine</code></pre>
-          <pre><code>mkdir -p scan-results
+          <pre><code>./scripts/batch-scan-images.sh images.txt
 
-while IFS= read -r image || [[ -n "$image" ]]; do
-  # Skip blank lines and comments
-  [[ -z "$image" || "$image" == \#* ]] && continue
-  echo "Scanning: $image"
-  safe_name=$(echo "$image" | tr '/:' '--')
-  fcs scan image "$image" --output json > "scan-results/${safe_name}.json"
-done < images.txt</code></pre>
-          <p>To run scans in parallel, use <code>&amp;</code> with a concurrency limit:</p>
-          <pre><code>MAX_PARALLEL=4
-count=0
-while IFS= read -r image || [[ -n "$image" ]]; do
-  [[ -z "$image" || "$image" == \#* ]] && continue
-  fcs scan image "$image" --output json > "scan-results/$(echo $image | tr '/:' '--').json" &
-  (( count++ ))
-  (( count % MAX_PARALLEL == 0 )) && wait
-done < images.txt
-wait</code></pre>
+# With options
+./scripts/batch-scan-images.sh \
+  --format json \
+  --output-dir ./scan-results \
+  --parallel 4 \
+  --timeout 300 \
+  images.txt</code></pre>
+          <p>The script generates a <code>summary.txt</code> report with per-image timing, pass/fail status, and aggregate statistics.</p>
         </div>
       </div>
 
@@ -1575,16 +1519,17 @@ wait</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Use <code>docker image ls</code> to enumerate local images, then loop through and scan each one:</p>
-          <pre><code># List all local images and scan each one
-docker image ls --format '{{.Repository}}:{{.Tag}}' \
-  | grep -v '<none>' \
-  | while read image; do
-    echo "Scanning: $image"
-    safe_name=$(echo "$image" | tr '/:' '--')
-    fcs scan image "$image" --output json > "scan-results/${safe_name}.json"
-  done</code></pre>
-          <div class="warn"><strong>Note:</strong> On systems with many images this can take significant time. The <code>grep -v '&lt;none&gt;'</code> filter skips untagged intermediate layers.</div>
+          <p>Use <code>scripts/scan-all-local-images.sh</code>, which enumerates all images from <code>docker image ls</code> and scans each one:</p>
+          <pre><code>./scripts/scan-all-local-images.sh
+
+# Skip untagged images
+./scripts/scan-all-local-images.sh --skip-pattern '&lt;none&gt;'
+
+# Save results to a directory
+./scripts/scan-all-local-images.sh \
+  --format json \
+  --output-dir ./all-scan-results</code></pre>
+          <div class="warn"><strong>Note:</strong> On systems with many images this can take significant time. Use <code>--skip-pattern</code> to filter out base layers and untagged intermediates.</div>
         </div>
       </div>
 
@@ -1603,40 +1548,23 @@ docker image ls --format '{{.Repository}}:{{.Tag}}' \
 
       <div class="faq-item">
         <div class="faq-question" onclick="toggle(this)">
-          <span class="q-text">How do I add logging and retry logic to scans for production use?</span>
+          <span class="q-text">What is scripts/fcs-wrapper.sh and when should I use it?</span>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>For production cron jobs and scheduled automation, wrap the <code>fcs</code> command with retry logic, timestamped logging, and failure alerting. Here's a minimal pattern:</p>
-          <pre class="no-prompt"><code>#!/bin/bash
-set -euo pipefail
-
-LOG_FILE="/var/log/fcs/scan-$(date +%Y%m%d-%H%M%S).log"
-MAX_RETRIES=3
-RETRY_DELAY=30
-
-run_with_retry() {
-  local attempt=1
-  until fcs "$@" 2>&1 | tee -a "$LOG_FILE"; do
-    if (( attempt >= MAX_RETRIES )); then
-      echo "FAILED after $MAX_RETRIES attempts" | tee -a "$LOG_FILE"
-      # Optionally: send Slack/PagerDuty alert here
-      exit 1
-    fi
-    echo "Attempt $attempt failed. Retrying in ${RETRY_DELAY}s..." | tee -a "$LOG_FILE"
-    (( attempt++ ))
-    sleep "$RETRY_DELAY"
-  done
-}
-
-run_with_retry scan image nginx:latest --output json</code></pre>
-          <p>Key additions for production readiness:</p>
+          <p><code>scripts/fcs-wrapper.sh</code> is an enhanced wrapper around the FCS CLI binary that adds production-grade operational features on top of the standard CLI:</p>
           <ul>
-            <li><strong>Logging</strong> — Tee output to a timestamped file for audit trails</li>
-            <li><strong>Retries</strong> — Handle transient API timeouts gracefully</li>
-            <li><strong>Alerting</strong> — Post to Slack via webhook or trigger PagerDuty on persistent failure</li>
-            <li><strong>Exit codes</strong> — Use <code>set -e</code> to propagate failures to cron/scheduling systems</li>
+            <li><strong>Automatic logging</strong> — Writes timestamped logs to <code>$LOG_DIR</code></li>
+            <li><strong>Retry logic</strong> — Retries on transient failures (configurable count and delay)</li>
+            <li><strong>Slack notifications</strong> — Posts alerts to a webhook URL when scans fail</li>
+            <li><strong>Metrics extraction</strong> — Parses result JSON and emits summary metrics</li>
+            <li><strong>Timing</strong> — Reports scan duration</li>
           </ul>
+          <p>Use it in <strong>production cron jobs</strong> and scheduled automation where you need observability and reliability beyond what the raw CLI provides.</p>
+          <pre><code>LOG_DIR=/var/log/fcs \
+MAX_RETRIES=3 \
+SLACK_WEBHOOK_URL=https://hooks.slack.com/... \
+./scripts/fcs-wrapper.sh scan image nginx:latest</code></pre>
         </div>
       </div>
 
@@ -1646,22 +1574,13 @@ run_with_retry scan image nginx:latest --output json</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Run the same scan against each region's API endpoint by switching the <code>FALCON_CLOUD</code> environment variable (or <code>--falcon-cloud</code> flag) between runs:</p>
-          <pre><code>mkdir -p multi-region-results
-
-for region in us-1 us-2 eu-1; do
-  echo "Scanning against region: $region"
-  FALCON_CLOUD=$region fcs scan image nginx:latest \
-    --output json > "multi-region-results/${region}.json"
-done
-
-# Compare critical counts across regions
-for f in multi-region-results/*.json; do
-  region=$(basename "$f" .json)
-  count=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' "$f")
-  echo "$region: $count critical"
-done</code></pre>
-          <p>If you have separate API credentials per region, use different profiles or set <code>FALCON_CLIENT_ID</code> and <code>FALCON_CLIENT_SECRET</code> per loop iteration.</p>
+          <p>Use <code>scripts/multi-region-scan.sh</code> to scan an image against multiple regions and compare results:</p>
+          <pre><code>./scripts/multi-region-scan.sh \
+  --regions us-1,us-2,eu-1 \
+  --output-dir ./multi-region-results \
+  nginx:latest</code></pre>
+          <p>The script generates per-region result files and an optional comparison report showing any discrepancies. This is useful for validating cross-region consistency and regulatory compliance requirements.</p>
+          <p>You can also supply region-specific credentials as environment variables (<code>FALCON_CLIENT_ID_US1</code>, <code>FALCON_CLIENT_ID_EU1</code>, etc.) for multi-tenant setups.</p>
           <div class="console"><div><strong>Falcon Console Required</strong> — Each region requires its own API credentials created in the corresponding regional Falcon console instance. Ensure you log in to the correct regional console when creating each set of credentials.</div></div>
         </div>
       </div>
@@ -1672,30 +1591,26 @@ done</code></pre>
           <svg class="q-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-answer">
-          <p>Run the scan with JSON output, then use <code>jq</code> to extract counts and apply thresholds in shell:</p>
-          <pre><code># Scan and save results
-fcs scan image myapp:latest --output json > results.json
+          <p>The <code>scripts/enforce-policy.sh</code> script wraps a scan and applies configurable severity thresholds as pass/fail gates:</p>
+          <pre><code># Fail on any critical (for production images)
+./scripts/enforce-policy.sh scan image myapp:latest \
+  --severity critical
 
-# Count by severity
-CRITICAL=$(jq '[.vulnerabilities[] | select(.severity=="CRITICAL")] | length' results.json)
-HIGH=$(jq '[.vulnerabilities[] | select(.severity=="HIGH")] | length' results.json)
-MEDIUM=$(jq '[.vulnerabilities[] | select(.severity=="MEDIUM")] | length' results.json)
+# Allow up to 10 high, zero criticals
+./scripts/enforce-policy.sh scan image myapp:latest \
+  --max-critical 0 \
+  --max-high 10 \
+  --max-medium 50
 
-echo "Critical: $CRITICAL | High: $HIGH | Medium: $MEDIUM"
+# IaC policy enforcement
+./scripts/enforce-policy.sh scan iac ./terraform \
+  --severity high
 
-# Enforce thresholds — exit 1 to fail a CI pipeline
-if (( CRITICAL > 0 )); then
-  echo "POLICY VIOLATION: $CRITICAL critical vulnerabilities found"
-  exit 1
-fi
-
-if (( HIGH > 10 )); then
-  echo "POLICY VIOLATION: $HIGH high vulnerabilities exceed limit of 10"
-  exit 1
-fi
-
-echo "Policy check passed."</code></pre>
-          <p>The same pattern works for IaC scan results — replace <code>.vulnerabilities[]</code> with the appropriate field path from the IaC JSON output (<code>.issues[]</code>).</p>
+# Soft mode: log violations but don't block
+./scripts/enforce-policy.sh scan image myapp:latest \
+  --severity critical \
+  --no-fail</code></pre>
+          <p>The script exits with code <code>1</code> on policy violations (causing CI to fail) and <code>0</code> on pass.</p>
         </div>
       </div>
     </section>
